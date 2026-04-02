@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — Smart Campus Portal</title>
+  <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/chatbot.css">
+</head>
+
+<body>
+  <div id="toast"></div>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">🎓</div>
+        <div class="sidebar-brand">Smart<span>Campus</span></div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a href="student-dashboard.html" class="nav-item active">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="complaint.html" class="nav-item">
+          <span class="nav-icon">📢</span>
+          <span class="nav-label">Raise Complaint</span>
+        </a>
+        <a href="lab-booking.html" class="nav-item">
+          <span class="nav-icon">💻</span>
+          <span class="nav-label">Lab Booking</span>
+        </a>
+        <a href="leave.html" class="nav-item">
+          <span class="nav-icon">📝</span>
+          <span class="nav-label">Leave / OD</span>
+        </a>
+        <a href="track.html" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Track Requests</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:20px">Account</div>
+        <a href="login.html" class="nav-item logout">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">Logout</span>
+        </a>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-chip">
+          <div class="user-avatar" id="avatarInitial">S</div>
+          <div class="user-info">
+            <div class="user-name" id="userEmail">Student</div>
+            <div class="user-role">Student Account</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-title">Student Dashboard</div>
+        <div class="topbar-right">
+          <span class="topbar-badge">📅 Session Active</span>
+          <span class="topbar-time" id="clock"></span>
+        </div>
+      </header>
+
+      <div class="page-body">
+        <div class="page-header animate-in">
+          <h2>Welcome back! 👋</h2>
+          <p>Here's everything you can do from your dashboard.</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stat-grid">
+          <div class="stat-card animate-in" style="--card-color:rgba(99,102,241,0.06)">
+            <div class="stat-icon purple">📢</div>
+            <div class="stat-body">
+              <div class="stat-label">My Complaints</div>
+              <div class="stat-value" id="myComplaints">—</div>
+            </div>
+          </div>
+          <div class="stat-card animate-in" style="--card-color:rgba(14,165,233,0.06)">
+            <div class="stat-icon blue">💻</div>
+            <div class="stat-body">
+              <div class="stat-label">Lab Bookings</div>
+              <div class="stat-value" id="myLabs">—</div>
+            </div>
+          </div>
+          <div class="stat-card animate-in" style="--card-color:rgba(16,185,129,0.06)">
+            <div class="stat-icon green">📝</div>
+            <div class="stat-body">
+              <div class="stat-label">Leave Requests</div>
+              <div class="stat-value" id="myLeaves">—</div>
+            </div>
+          </div>
+          <div class="stat-card animate-in" style="--card-color:rgba(245,158,11,0.06)">
+            <div class="stat-icon amber">✅</div>
+            <div class="stat-body">
+              <div class="stat-label">Approved</div>
+              <div class="stat-value" id="myApproved">—</div>
+              <div class="stat-delta" style="color:var(--success)">Total across all</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div id="calendar-root"></div>
+
+        <!-- Action Cards -->
+        <div class="page-header">
+          <h2>Quick Actions</h2>
+          <p>Select an action to get started.</p>
+        </div>
+
+        <div class="dash-grid">
+          <a href="complaint.html" class="dash-card animate-in" style="--card-accent:var(--primary)">
+            <div class="dash-card-icon" style="background:rgba(99,102,241,0.15)">📢</div>
+            <h3>Raise Complaint</h3>
+            <p>Report campus infrastructure or service issues directly.</p>
+          </a>
+          <a href="lab-booking.html" class="dash-card animate-in" style="--card-accent:var(--secondary)">
+            <div class="dash-card-icon" style="background:rgba(14,165,233,0.15)">💻</div>
+            <h3>Book a Lab</h3>
+            <p>Reserve computer labs, AI lab or seminar halls online.</p>
+          </a>
+          <a href="leave.html" class="dash-card animate-in" style="--card-accent:var(--success)">
+            <div class="dash-card-icon" style="background:rgba(16,185,129,0.15)">📝</div>
+            <h3>Apply Leave / OD</h3>
+            <p>Submit casual, medical or on-duty leave requests.</p>
+          </a>
+          <a href="track.html" class="dash-card animate-in" style="--card-accent:var(--accent)">
+            <div class="dash-card-icon" style="background:rgba(168,85,247,0.15)">📊</div>
+            <h3>Track Requests</h3>
+            <p>View the live status of all your submitted requests.</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/calendar.js"></script>
+  <script>
+    // Clock
+    function tick() {
+      document.getElementById('clock').textContent =
+        new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    }
+    tick(); setInterval(tick, 1000);
+
+    // User
+    const email = localStorage.getItem('email');
+    if (email) {
+      document.getElementById('userEmail').textContent = email;
+      document.getElementById('avatarInitial').textContent = email[0].toUpperCase();
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = type;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // Fetch live user stats
+    async function loadMyStats() {
+      if (!email) return;
+      try {
+        const [compRes, labRes, leaveRes] = await Promise.all([
+          fetch('http://localhost:5000/api/complaints').catch(() => ({ ok: false })),
+          fetch('http://localhost:5000/api/lab-bookings').catch(() => ({ ok: false })),
+          fetch('http://localhost:5000/api/leaves').catch(() => ({ ok: false }))
+        ]);
+
+        const complaints = compRes.ok ? await compRes.json() : [];
+        const labs = labRes.ok ? await labRes.json() : [];
+        const leaves = leaveRes.ok ? await leaveRes.json() : [];
+
+        // Filter to current user
+        const myC = complaints.filter(x => x.studentEmail === email);
+        const myL = labs.filter(x => x.studentEmail === email);
+        const myLv = leaves.filter(x => x.studentEmail === email);
+
+        document.getElementById('myComplaints').textContent = myC.length;
+        document.getElementById('myLabs').textContent = myL.length;
+        document.getElementById('myLeaves').textContent = myLv.length;
+
+        // Count how many are approved/resolved
+        let approvedCount = 0;
+        const isApproved = s => {
+          const v = (s || '').toLowerCase();
+          return v === 'approved' || v === 'resolved';
+        };
+
+        myC.forEach(x => { if (isApproved(x.status)) approvedCount++; });
+        myL.forEach(x => { if (isApproved(x.status)) approvedCount++; });
+        myLv.forEach(x => { if (isApproved(x.status)) approvedCount++; });
+
+        document.getElementById('myApproved').textContent = approvedCount;
+
+      } catch (err) {
+        console.error('Failed to load stats', err);
+      }
+    }
+
+    loadMyStats();
+  </script>
+
+  <!-- LICET AI CHATBOT -->
+  <button id="chatbot-toggler" title="LICET AI Assistant">💬</button>
+  
+  <div id="chatbot-container">
+    <div class="chatbot-header">
+      <div class="chatbot-header-icon">🎓</div>
+      <div class="chatbot-header-info">
+        <h3>LICET Assistant</h3>
+        <span>Always Online</span>
+      </div>
+    </div>
+    
+    <div id="chatbot-messages"></div>
+    
+    <div class="chatbot-input-area">
+      <input type="text" id="chatbot-input" placeholder="Ask me about LICET..." autocomplete="off">
+      <button id="chatbot-send">➤</button>
+    </div>
+  </div>
+
+  <script src="js/chatbot.js"></script>
+</body>
+
+</html>

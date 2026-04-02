@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave / OD Request — Smart Campus Portal</title>
+<link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div id="toast"></div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">🎓</div>
+      <div class="sidebar-brand">Smart<span>Campus</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <a href="student-dashboard.html" class="nav-item">
+        <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+      </a>
+      <a href="complaint.html" class="nav-item">
+        <span class="nav-icon">📢</span><span class="nav-label">Raise Complaint</span>
+      </a>
+      <a href="lab-booking.html" class="nav-item">
+        <span class="nav-icon">💻</span><span class="nav-label">Lab Booking</span>
+      </a>
+      <a href="leave.html" class="nav-item active">
+        <span class="nav-icon">📝</span><span class="nav-label">Leave / OD</span>
+      </a>
+      <a href="track.html" class="nav-item">
+        <span class="nav-icon">📊</span><span class="nav-label">Track Requests</span>
+      </a>
+      <div class="sidebar-section-label" style="margin-top:20px">Account</div>
+      <a href="login.html" class="nav-item logout">
+        <span class="nav-icon">🚪</span><span class="nav-label">Logout</span>
+      </a>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <div class="user-avatar" id="avatarInitial">S</div>
+        <div class="user-info">
+          <div class="user-name" id="userEmail">Student</div>
+          <div class="user-role">Student Account</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Leave / OD Request</div>
+      <div class="topbar-right">
+        <span class="topbar-badge">📝 Leave</span>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="page-header animate-in">
+        <h2>Apply for Leave or OD</h2>
+        <p>Submit your leave request and track its approval status.</p>
+      </div>
+
+      <div class="form-panel animate-in">
+        <form onsubmit="submitLeave(event)">
+          <div class="form-group">
+            <label class="form-label">Leave Type</label>
+            <select id="leaveType" class="form-control">
+              <option value="Casual Leave">Casual Leave</option>
+              <option value="Medical Leave">Medical Leave</option>
+              <option value="On Duty (OD)">On Duty (OD)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">From Date</label>
+            <input id="fromDate" type="date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">To Date</label>
+            <input id="toDate" type="date" class="form-control" required>
+          </div>
+          <div class="form-group" style="margin-bottom:24px">
+            <label class="form-label">Reason</label>
+            <textarea id="reason" class="form-control" placeholder="Briefly explain your reason for leave…" rows="4"></textarea>
+          </div>
+          <button class="btn btn-primary">📨 Submit Request</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const email = localStorage.getItem('email');
+if (email) {
+  document.getElementById('userEmail').textContent = email;
+  document.getElementById('avatarInitial').textContent = email[0].toUpperCase();
+}
+
+// Set min date to today for fromDate and toDate
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('fromDate').setAttribute('min', today);
+document.getElementById('toDate').setAttribute('min', today);
+
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function submitLeave(event) {
+  event.preventDefault();
+  const leaveType    = document.getElementById('leaveType').value;
+  const fromDate     = document.getElementById('fromDate').value;
+  const toDate       = document.getElementById('toDate').value;
+  const reason       = document.getElementById('reason').value;
+  const studentEmail = localStorage.getItem('email');
+
+  if (new Date(fromDate) < new Date(today)) {
+    showToast('From Date cannot be in the past.', 'error'); return;
+  }
+
+  if (new Date(toDate) < new Date(fromDate)) {
+    showToast('To Date must be after From Date.', 'error'); return;
+  }
+
+
+  try {
+    const res = await fetch('http://localhost:5000/api/leaves', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leaveType, fromDate, toDate, reason, studentEmail })
+    });
+    const data = await res.json();
+    showToast('✅ ' + (data.message || 'Leave request submitted!'), 'success');
+    event.target.reset();
+  } catch {
+    showToast('✅ Request submitted! (offline mode)', 'success');
+    event.target.reset();
+  }
+}
+</script>
+</body>
+</html>

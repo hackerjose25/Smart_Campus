@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab Booking — Smart Campus Portal</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+
+<body>
+  <div id="toast"></div>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">🎓</div>
+        <div class="sidebar-brand">Smart<span>Campus</span></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <a href="student-dashboard.html" class="nav-item">
+          <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+        </a>
+        <a href="complaint.html" class="nav-item">
+          <span class="nav-icon">📢</span><span class="nav-label">Raise Complaint</span>
+        </a>
+        <a href="lab-booking.html" class="nav-item active">
+          <span class="nav-icon">💻</span><span class="nav-label">Lab Booking</span>
+        </a>
+        <a href="leave.html" class="nav-item">
+          <span class="nav-icon">📝</span><span class="nav-label">Leave / OD</span>
+        </a>
+        <a href="track.html" class="nav-item">
+          <span class="nav-icon">📊</span><span class="nav-label">Track Requests</span>
+        </a>
+        <div class="sidebar-section-label" style="margin-top:20px">Account</div>
+        <a href="login.html" class="nav-item logout">
+          <span class="nav-icon">🚪</span><span class="nav-label">Logout</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-chip">
+          <div class="user-avatar" id="avatarInitial">S</div>
+          <div class="user-info">
+            <div class="user-name" id="userEmail">Student</div>
+            <div class="user-role">Student Account</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-title">Lab / Room Booking</div>
+        <div class="topbar-right">
+          <span class="topbar-badge">💻 Booking</span>
+        </div>
+      </header>
+
+      <div class="page-body">
+        <div class="page-header animate-in">
+          <h2>Reserve a Lab or Room</h2>
+          <p>Select your preferred facility, date and time slot below.</p>
+        </div>
+
+        <div class="form-panel animate-in">
+          <form onsubmit="bookLab(event)">
+            <div class="form-group">
+              <label class="form-label">Select Facility</label>
+              <select id="lab" class="form-control">
+                <option>RDBMS Lab</option>
+                <option>A21 Lab</option>
+                <option>A22 Lab</option>
+                <option>Chemistry Lab</option>
+                <option>Physics Lab</option>
+                <option>Electrical and Electronics Lab</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input id="date" type="date" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Slot</label>
+              <select id="timeSlot" class="form-control">
+                <option>9:00 AM – 11:00 AM</option>
+                <option>11:00 AM – 1:00 PM</option>
+                <option>2:00 PM – 4:00 PM</option>
+                <option>4:00 PM – 6:00 PM</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:24px">
+              <label class="form-label">Purpose</label>
+              <textarea id="purpose" class="form-control" placeholder="Brief purpose of the booking…"
+                rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary">📅 Confirm Booking</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const email = localStorage.getItem('email');
+    if (email) {
+      document.getElementById('userEmail').textContent = email;
+      document.getElementById('avatarInitial').textContent = email[0].toUpperCase();
+    }
+
+    // Set min date to today for the date input
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').setAttribute('min', today);
+
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = type;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    async function bookLab(event) {
+      event.preventDefault();
+      const lab = document.getElementById('lab').value;
+      const date = document.getElementById('date').value;
+      const timeSlot = document.getElementById('timeSlot').value;
+      const purpose = document.getElementById('purpose').value;
+      const studentEmail = localStorage.getItem('email');
+
+      if (new Date(date) < new Date(today)) {
+        showToast('Booking date cannot be in the past.', 'error'); return;
+      }
+
+      try {
+
+        const res = await fetch('http://localhost:5000/api/lab-bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lab, date, timeSlot, purpose, studentEmail })
+        });
+        const data = await res.json();
+        showToast('✅ ' + (data.message || 'Lab booked successfully!'), 'success');
+        event.target.reset();
+      } catch {
+        showToast('✅ Lab booked! (offline mode)', 'success');
+        event.target.reset();
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Smart Campus Portal</title>
+<link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div id="toast"></div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">🛡️</div>
+      <div class="sidebar-brand">Smart<span>Admin</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Management</div>
+      <a href="admin-dashboard.html" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="admin-complaints.html" class="nav-item">
+        <span class="nav-icon">📢</span>
+        <span class="nav-label">Complaints</span>
+      </a>
+      <a href="admin-lab-bookings.html" class="nav-item">
+        <span class="nav-icon">💻</span>
+        <span class="nav-label">Lab Bookings</span>
+      </a>
+      <a href="admin-leaves.html" class="nav-item">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">Leave Requests</span>
+      </a>
+
+      <div class="sidebar-section-label" style="margin-top:20px">Account</div>
+      <a href="login.html" class="nav-item logout">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Logout</span>
+      </a>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <div class="user-avatar" style="background:linear-gradient(135deg,#ef4444,#9f1239)">A</div>
+        <div class="user-info">
+          <div class="user-name">Administrator</div>
+          <div class="user-role">Admin Account</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Admin Dashboard</div>
+      <div class="topbar-right">
+        <span class="topbar-badge" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#f87171">🛡️ Admin</span>
+        <span class="topbar-time" id="clock"></span>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="page-header animate-in">
+        <h2>Overview 📊</h2>
+        <p>Live summary of all campus service requests and activity.</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card animate-in">
+          <div class="stat-icon purple">📢</div>
+          <div class="stat-body">
+            <div class="stat-label">Total Complaints</div>
+            <div class="stat-value" id="totalComplaints">—</div>
+          </div>
+        </div>
+        <div class="stat-card animate-in">
+          <div class="stat-icon amber">⏳</div>
+          <div class="stat-body">
+            <div class="stat-label">Pending Issues</div>
+            <div class="stat-value" style="color:var(--warning)" id="pendingCount">—</div>
+          </div>
+        </div>
+        <div class="stat-card animate-in">
+          <div class="stat-icon blue">💻</div>
+          <div class="stat-body">
+            <div class="stat-label">Lab Bookings</div>
+            <div class="stat-value" style="color:var(--secondary)" id="totalLabs">—</div>
+          </div>
+        </div>
+        <div class="stat-card animate-in">
+          <div class="stat-icon green">📝</div>
+          <div class="stat-body">
+            <div class="stat-label">Leave Requests</div>
+            <div class="stat-value" style="color:var(--success)" id="totalLeaves">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Section -->
+      <div id="calendar-root"></div>
+
+      <!-- Complaints Table -->
+      <div class="panel animate-in">
+        <div class="panel-header">
+          <h3>📋 Recent Complaints</h3>
+          <span class="topbar-badge">Live</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Issue</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="complaintTable">
+              <!-- Loaded by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/calendar.js"></script>
+<script>
+function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+tick(); setInterval(tick, 1000);
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function badgeFor(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'resolved') return `<span class="badge badge-resolved">Resolved</span>`;
+  if (s === 'approved') return `<span class="badge badge-approved">Approved</span>`;
+  if (s === 'rejected') return `<span class="badge badge-rejected">Rejected</span>`;
+  return `<span class="badge badge-pending">Pending</span>`;
+}
+
+async function loadDashboardData() {
+  try {
+    const [compRes, labRes, leaveRes] = await Promise.all([
+      fetch('http://localhost:5000/api/complaints').catch(()=>({ok:false})),
+      fetch('http://localhost:5000/api/lab-bookings').catch(()=>({ok:false})),
+      fetch('http://localhost:5000/api/leaves').catch(()=>({ok:false}))
+    ]);
+
+    const complaints = compRes.ok ? await compRes.json() : [];
+    const labs       = labRes.ok ? await labRes.json() : [];
+    const leaves     = leaveRes.ok ? await leaveRes.json() : [];
+
+    // Stats
+    document.getElementById('totalComplaints').textContent = complaints.length;
+    document.getElementById('totalLabs').textContent = labs.length;
+    document.getElementById('totalLeaves').textContent = leaves.length;
+
+    const pendingComp = complaints.filter(c => (c.status || '').toLowerCase() === 'pending').length;
+    document.getElementById('pendingCount').textContent = pendingComp;
+
+    // Load table with complaints only (for dashboard preview)
+    const rows = complaints.slice(0, 5).map(c => `
+      <tr>
+        <td style="color:var(--text-primary);font-weight:600">${c.studentEmail || '—'}</td>
+        <td>${c.title || '—'}</td>
+        <td id="dash-status-${c._id}">${badgeFor(c.status)}</td>
+        <td>
+          ${(c.status || 'Pending').toLowerCase() === 'pending'
+            ? `<button class="btn btn-success" style="padding:5px 14px;font-size:0.8rem;border-radius:var(--radius-sm)" onclick="approveComplaint('${c._id}')">✓ Resolve</button>`
+            : '—'}
+        </td>
+      </tr>`).join('');
+    
+    document.getElementById('complaintTable').innerHTML = rows || '<tr><td colspan="4" style="text-align:center">No complaints found.</td></tr>';
+  } catch (err) {
+    document.getElementById('complaintTable').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger)">Failed to load data</td></tr>';
+  }
+}
+
+async function approveComplaint(id) {
+  try {
+    const res = await fetch(`http://localhost:5000/api/complaints/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'Resolved' })
+    });
+    if(res.ok) {
+      document.getElementById(`dash-status-${id}`).innerHTML = badgeFor('Resolved');
+      showToast('Complaint resolved!', 'success');
+      loadDashboardData();
+    } else {
+      showToast('Failed to update status', 'error');
+    }
+  } catch {
+    showToast('Server error during update', 'error');
+  }
+}
+
+loadDashboardData();
+</script>
+</body>
+</html>

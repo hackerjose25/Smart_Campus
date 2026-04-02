@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track Requests — Smart Campus Portal</title>
+<link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div id="toast"></div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">🎓</div>
+      <div class="sidebar-brand">Smart<span>Campus</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <a href="student-dashboard.html" class="nav-item">
+        <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+      </a>
+      <a href="complaint.html" class="nav-item">
+        <span class="nav-icon">📢</span><span class="nav-label">Raise Complaint</span>
+      </a>
+      <a href="lab-booking.html" class="nav-item">
+        <span class="nav-icon">💻</span><span class="nav-label">Lab Booking</span>
+      </a>
+      <a href="leave.html" class="nav-item">
+        <span class="nav-icon">📝</span><span class="nav-label">Leave / OD</span>
+      </a>
+      <a href="track.html" class="nav-item active">
+        <span class="nav-icon">📊</span><span class="nav-label">Track Requests</span>
+      </a>
+      <div class="sidebar-section-label" style="margin-top:20px">Account</div>
+      <a href="login.html" class="nav-item logout">
+        <span class="nav-icon">🚪</span><span class="nav-label">Logout</span>
+      </a>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <div class="user-avatar" id="avatarInitial">S</div>
+        <div class="user-info">
+          <div class="user-name" id="userEmail">Student</div>
+          <div class="user-role">Student Account</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Track Requests</div>
+      <div class="topbar-right">
+        <span class="topbar-badge">📊 Status</span>
+        <span class="topbar-time" id="clock"></span>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="page-header animate-in">
+        <h2>My Request History</h2>
+        <p>Check the live status of all your submissions.</p>
+      </div>
+
+      <div class="panel animate-in">
+        <div class="panel-header">
+          <h3>All Requests</h3>
+          <span class="topbar-badge">3 total</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Date Submitted</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="requestTable">
+              <!-- JS loads data -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+tick(); setInterval(tick, 1000);
+
+const email = localStorage.getItem('email');
+if (email) {
+  document.getElementById('userEmail').textContent = email;
+  document.getElementById('avatarInitial').textContent = email[0].toUpperCase();
+}
+
+function badgeFor(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'resolved') return `<span class="badge badge-resolved">Resolved</span>`;
+  if (s === 'approved') return `<span class="badge badge-approved">Approved</span>`;
+  if (s === 'rejected') return `<span class="badge badge-rejected">Rejected</span>`;
+  return `<span class="badge badge-pending">Pending</span>`;
+}
+
+async function loadMyRequests() {
+  if(!email) return;
+  const tbody = document.getElementById('requestTable');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading requests...</td></tr>';
+
+  try {
+    const [compRes, labRes, leaveRes] = await Promise.all([
+      fetch('http://localhost:5000/api/complaints').catch(()=>({ok:false})),
+      fetch('http://localhost:5000/api/lab-bookings').catch(()=>({ok:false})),
+      fetch('http://localhost:5000/api/leaves').catch(()=>({ok:false}))
+    ]);
+
+    let complaints = compRes.ok ? await compRes.json() : [];
+    let labBookings = labRes.ok ? await labRes.json() : [];
+    let leaves = leaveRes.ok ? await leaveRes.json() : [];
+
+    // Filter by my email
+    complaints = complaints.filter(c => c.studentEmail === email);
+    labBookings = labBookings.filter(b => b.studentEmail === email);
+    leaves = leaves.filter(l => l.studentEmail === email);
+
+    // Combine into a generic list
+    const allRequests = [
+      ...complaints.map(c => ({
+        type: '<span style="margin-right:6px">📢</span> Complaint',
+        desc: c.title || c.category,
+        date: c.createdAt || new Date().toISOString(),
+        status: c.status
+      })),
+      ...labBookings.map(b => ({
+        type: '<span style="margin-right:6px">💻</span> Lab Booking',
+        desc: `${b.lab} (${b.purpose || 'Reservation'})`,
+        date: b.date || new Date().toISOString(),
+        status: b.status
+      })),
+      ...leaves.map(l => ({
+        type: '<span style="margin-right:6px">📝</span> Leave',
+        desc: `${l.leaveType} (${l.reason || 'Leave'})`,
+        date: l.fromDate || new Date().toISOString(),
+        status: l.status
+      }))
+    ];
+
+    // Update total badge
+    document.querySelector('.panel-header .topbar-badge').textContent = `${allRequests.length} total`;
+
+    if (allRequests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">No requests found.</td></tr>';
+      return;
+    }
+
+    // Sort newest first (approx)
+    allRequests.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    tbody.innerHTML = allRequests.map(r => `
+      <tr>
+        <td style="color:var(--text-primary);font-weight:600">${r.type}</td>
+        <td>${r.desc}</td>
+        <td>${new Date(r.date).toLocaleDateString()}</td>
+        <td>${badgeFor(r.status)}</td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger)">Failed to load requests</td></tr>';
+  }
+}
+
+loadMyRequests();
+</script>
+</body>
+</html>

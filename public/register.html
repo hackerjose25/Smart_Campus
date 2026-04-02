@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Smart Campus Portal</title>
+<link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+<div class="auth-bg">
+  <div id="toast"></div>
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="logo-icon">🎓</div>
+      <div class="logo-text">Smart<span>Campus</span></div>
+    </div>
+
+    <h1 class="auth-title">Create Account</h1>
+    <p class="auth-subtitle">Join with your verified Google account</p>
+
+    <div style="margin: 30px 0;">
+      <div id="g_id_onload" data-client_id="189216593133-lfdec4ddldesis9bn58vsib4ohf7h22m.apps.googleusercontent.com"
+        data-callback="handleCredentialResponse" data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue" data-text="signup_with"
+        data-shape="rectangular" data-logo_alignment="left" data-width="100%">
+      </div>
+    </div>
+
+    <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.4;">
+      To ensure authenticity and prevent fake accounts, we only allow registration via verified Google accounts.
+    </p>
+
+    <p class="auth-footer">
+      Already have an account?
+      <a href="login.html">Sign in</a>
+    </p>
+    <p class="auth-footer" style="margin-top:10px">
+      <a href="#" onclick="adminPrompt(event)" style="color:var(--text-muted); font-size: 0.8rem; font-weight: normal;">Login as Administrator 🛡️</a>
+    </p>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+async function handleCredentialResponse(response) {
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/google-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: response.credential })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message, 'error'); return; }
+    
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('email', data.user.email);
+    showToast('Registration successful! Redirecting…', 'success');
+    
+    setTimeout(() => window.location.href = 'student-dashboard.html', 1200);
+  } catch (err) {
+    showToast('Google sign-up failed. Please try again.', 'error');
+  }
+}
+
+function showToast(msg, type = 'default') {
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function adminPrompt(e) {
+  e.preventDefault();
+  const pwd = prompt("Enter Administrator Password:");
+  if (pwd === "Admin@1234") {
+    localStorage.setItem('email', 'admin@university.edu');
+    window.location.href = "admin-dashboard.html";
+  } else if (pwd !== null) {
+    showToast("Incorrect administrator password!", "error");
+  }
+}
+</script>
+</body>
+</html>
