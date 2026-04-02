@@ -1125,3 +1125,137 @@ textarea.form-control {
   color: white;
   padding: 8px 10px;
 }
+
+/* =============================================
+   MOBILE RESPONSIVENESS
+   ============================================= */
+
+/* Menu Toggle Button (hidden by default) */
+.mobile-nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-w: 260px; /* same but will be hidden */
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  .mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .topbar-title {
+    font-size: 1rem;
+  }
+
+  .topbar-right {
+    gap: 8px;
+  }
+
+  .topbar-badge {
+    display: none; /* Hide badges on very small to save space */
+  }
+
+  .page-body {
+    padding: 16px;
+  }
+
+  .stat-grid, .dash-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .panel-header {
+    padding: 14px 16px;
+  }
+
+  .data-table th, .data-table td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Calendar Mobile Tweak */
+  .calendar-card {
+    padding: 16px;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-day {
+    min-height: 80px;
+    padding: 4px;
+  }
+
+  .day-number {
+    font-size: 0.75rem;
+  }
+
+  .day-booking-item {
+    padding: 2px 4px;
+  }
+
+  .booking-lab {
+    font-size: 0.6rem;
+  }
+
+  .booking-time {
+    display: none; /* Hide time on mobile to save space */
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 32px 24px;
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-title {
+    font-size: 1.35rem;
+  }
+
+  .topbar-time {
+    display: none;
+  }
+}
