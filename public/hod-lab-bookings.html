@@ -112,7 +112,7 @@ function badgeFor(status) {
 
 async function loadData() {
   try {
-    const res = await fetch('http://localhost:5000/api/lab-bookings');
+    const res = await fetch('/api/lab-bookings');
     if (!res.ok) throw new Error();
     const data = await res.json();
     const rows = data.map(item => `

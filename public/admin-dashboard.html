@@ -158,9 +158,9 @@ function badgeFor(status) {
 async function loadDashboardData() {
   try {
     const [compRes, labRes, leaveRes] = await Promise.all([
-      fetch('http://localhost:5000/api/complaints').catch(()=>({ok:false})),
-      fetch('http://localhost:5000/api/lab-bookings').catch(()=>({ok:false})),
-      fetch('http://localhost:5000/api/leaves').catch(()=>({ok:false}))
+      fetch('/api/complaints').catch(()=>({ok:false})),
+      fetch('/api/lab-bookings').catch(()=>({ok:false})),
+      fetch('/api/leaves').catch(()=>({ok:false}))
     ]);
 
     const complaints = compRes.ok ? await compRes.json() : [];
@@ -196,7 +196,7 @@ async function loadDashboardData() {
 
 async function approveComplaint(id) {
   try {
-    const res = await fetch(`http://localhost:5000/api/complaints/${id}`, {
+    const res = await fetch(`/api/complaints/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'Resolved' })

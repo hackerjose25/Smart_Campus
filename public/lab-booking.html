@@ -76,7 +76,7 @@
                 <option>A22 Lab</option>
                 <option>Chemistry Lab</option>
                 <option>Physics Lab</option>
-                <option>Electrical and Electronics Lab</option>
+                <option>EEE Lab</option>
               </select>
             </div>
             <div class="form-group">
@@ -138,7 +138,7 @@
 
       try {
 
-        const res = await fetch('http://localhost:5000/api/lab-bookings', {
+        const res = await fetch('/api/lab-bookings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lab, date, timeSlot, purpose, studentEmail })

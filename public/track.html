@@ -118,9 +118,9 @@ async function loadMyRequests() {
 
   try {
     const [compRes, labRes, leaveRes] = await Promise.all([
-      fetch('http://localhost:5000/api/complaints').catch(()=>({ok:false})),
-      fetch('http://localhost:5000/api/lab-bookings').catch(()=>({ok:false})),
-      fetch('http://localhost:5000/api/leaves').catch(()=>({ok:false}))
+      fetch('/api/complaints').catch(()=>({ok:false})),
+      fetch('/api/lab-bookings').catch(()=>({ok:false})),
+      fetch('/api/leaves').catch(()=>({ok:false}))
     ]);
 
     let complaints = compRes.ok ? await compRes.json() : [];

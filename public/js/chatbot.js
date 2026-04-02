@@ -3,7 +3,7 @@
    Integration with Google Gemini API
    ============================================= */
 
-const API_URL = "http://localhost:5000/api/chatbot";
+const API_URL = "/api/chatbot";
 
 
 // State

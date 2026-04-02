@@ -967,7 +967,7 @@ textarea.form-control {
 }
 
 .calendar-day {
-  aspect-ratio: 1;
+  min-height: 100px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-md);
@@ -977,6 +977,7 @@ textarea.form-control {
   position: relative;
   transition: all var(--duration) var(--ease);
   cursor: default;
+  overflow: hidden;
 }
 
 .calendar-day:hover {
@@ -1004,41 +1005,43 @@ textarea.form-control {
   color: var(--primary-light);
 }
 
-.booking-dots {
+/* Persistent Booking Items */
+.day-bookings-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-top: auto;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  overflow-y: auto;
+  max-height: 80px;
 }
 
-.booking-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--secondary);
-  box-shadow: 0 0 8px var(--secondary);
+.day-booking-item {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 4px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
+.booking-lab {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.booking-time {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+}
+
+/* Tooltip removed in favor of persistent display */
 .calendar-tooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-8px);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px;
-  width: 200px;
-  z-index: 200;
-  box-shadow: var(--shadow-lg);
-  pointer-events: none;
-  opacity: 0;
-  transition: all 0.2s var(--ease);
-}
-
-.calendar-day:hover .calendar-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-12px);
+  display: none;
 }
 
 .tooltip-item {

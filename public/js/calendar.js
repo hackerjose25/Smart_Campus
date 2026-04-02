@@ -20,7 +20,7 @@ class CampusCalendar {
 
   async fetchBookings() {
     try {
-      const res = await fetch('http://localhost:5000/api/lab-bookings');
+      const res = await fetch('/api/lab-bookings');
       if (res.ok) {
         this.bookings = await res.json();
       }
@@ -97,23 +97,14 @@ class CampusCalendar {
       html += `
         <div class="calendar-day ${isToday ? 'today' : ''}">
           <span class="day-number">${d}</span>
-          ${dayBookings.length > 0 ? `
-            <div class="booking-dots">
-              ${dayBookings.map(() => '<div class="booking-dot"></div>').join('')}
-            </div>
-            <div class="calendar-tooltip">
-              <div style="font-weight:700; font-size:0.8rem; margin-bottom:6px; border-bottom:1px solid var(--border); padding-bottom:4px">
-                Bookings for ${d} ${monthName}
+          <div class="day-bookings-container">
+            ${dayBookings.map(b => `
+              <div class="day-booking-item">
+                <span class="booking-lab">${b.lab || 'Lab'}</span>
+                <span class="booking-time">${b.timeSlot || ''}</span>
               </div>
-              ${dayBookings.map(b => `
-                <div class="tooltip-item">
-                  <div class="tooltip-lab">${b.lab || 'Lab'}</div>
-                  <div class="tooltip-time">⏰ ${b.timeSlot || '—'}</div>
-                  <div class="tooltip-student">${b.studentEmail || '—'}</div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
+            `).join('')}
+          </div>
         </div>
       `;
     }
